@@ -34,6 +34,12 @@ public struct DSQueryParameter {
     public var key: String
     public var operation: Operation
     public var value: Encodable
+
+    public init(key: String, operation: Operation, value: Encodable) {
+        self.key = key
+        self.operation = operation
+        self.value = value
+    }
 }
 
 extension DSQueryParameter: QueryParameter {
