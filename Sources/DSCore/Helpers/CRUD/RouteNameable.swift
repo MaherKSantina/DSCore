@@ -7,6 +7,6 @@
 
 import Vapor
 
-protocol RouteNameable {
+public protocol RouteNameable {
     static func routePath() throws -> String
 }

@@ -7,13 +7,13 @@
 
 import Foundation
 
-struct JoinRelationship {
-    var type: JoinType
-    var key1: String
-    var key2: String
+public struct JoinRelationship {
+    public var type: JoinType
+    public var key1: String
+    public var key2: String
 }
 
-enum JoinType: String {
+public enum JoinType: String {
     case inner = " inner join "
     case left = " left join "
     case right = " right join "

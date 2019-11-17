@@ -8,7 +8,7 @@
 import Vapor
 import FluentMySQL
 
-protocol ThreeModelJoin: ThreeModelView {
+public protocol ThreeModelJoin: ThreeModelView {
     static var join12: JoinRelationship { get }
     static var join23: JoinRelationship { get }
     static var model1selectFields: [String] { get }
@@ -20,7 +20,7 @@ extension ThreeModelJoin where Self: ModelView, Model1.Database == MySQLDatabase
     
     typealias Database = MySQLDatabase
     
-    static func prepare(on conn: MySQLConnection) -> EventLoopFuture<Void> {
+    public static func prepare(on conn: MySQLConnection) -> EventLoopFuture<Void> {
         let entity1Alias = "entity1"
         let entity2Alias = "entity2"
         let entity3Alias = "entity3"

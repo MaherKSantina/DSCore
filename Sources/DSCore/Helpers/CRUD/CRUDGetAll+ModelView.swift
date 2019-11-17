@@ -8,7 +8,7 @@
 import FluentMySQL
 
 extension CRUDGetAll where Self: ModelView {
-    static func crudGetAll(on connectable: DatabaseConnectable) -> EventLoopFuture<[Self]> {
+    public static func crudGetAll(on connectable: DatabaseConnectable) -> EventLoopFuture<[Self]> {
         guard let conn = connectable as? Container else {
             fatalError()
         }

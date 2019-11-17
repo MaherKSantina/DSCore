@@ -8,43 +8,43 @@
 import Vapor
 import FluentMySQL
 
-protocol CRUD: CRUDGetAll, CRUDCreate, CRUDDelete { }
+public protocol CRUD: CRUDGetAll, CRUDCreate, CRUDDelete { }
 
 
-protocol CRUDGetAll {
+public protocol CRUDGetAll {
     static func crudGetAll(on conn: DatabaseConnectable) -> Future<[Self]>
 }
 
-protocol CRUDCreate {
+public protocol CRUDCreate {
     func crudCreate(on conn: DatabaseConnectable) -> Future<Self>
 }
 
-protocol CRUDDelete {
+public protocol CRUDDelete {
     func crudDelete(on conn: DatabaseConnectable) -> Future<Self>
 }
 
 extension CRUDGetAll where Self: Model {
-    static func crudGetAll(on conn: DatabaseConnectable) -> Future<[Self]> {
+    public static func crudGetAll(on conn: DatabaseConnectable) -> Future<[Self]> {
         return Self.query(on: conn).all()
     }
 }
 
 extension CRUDCreate where Self: Model {
     
-    func crudCreate(on conn: DatabaseConnectable) -> Future<Self> {
+    public func crudCreate(on conn: DatabaseConnectable) -> Future<Self> {
         return self.save(on: conn)
     }
     
 }
 
 extension CRUDDelete where Self: Model {
-    func crudDelete(on conn: DatabaseConnectable) -> Future<Self> {
+    public func crudDelete(on conn: DatabaseConnectable) -> Future<Self> {
         return self.delete(on: conn).transform(to: self)
     }
 }
 
 extension Array where Element: Model {
-    func save(on conn: DatabaseConnectable) -> Future<HTTPStatus> {
+    public func save(on conn: DatabaseConnectable) -> Future<HTTPStatus> {
         return self.map{ $0.save(on: conn) }.flatten(on: conn).transform(to: .ok)
     }
 }

@@ -7,28 +7,28 @@
 
 import FluentMySQL
 
-class DSQuery<T: Decodable> {
-    var table: String
-    var parameters: [QueryParameter]
-    var onlyOne: Bool
+public class DSQuery<T: Decodable> {
+    public var table: String
+    public var parameters: [QueryParameter]
+    public var onlyOne: Bool
     
-    init(table: String, onlyOne: Bool, parameters: [QueryParameter] = []) {
+    public init(table: String, onlyOne: Bool, parameters: [QueryParameter] = []) {
         self.table = table
         self.onlyOne = onlyOne
         self.parameters = parameters
     }
     
-    func withParameters(parameters newParameters: [QueryParameter]) -> DSQuery {
+    public func withParameters(parameters newParameters: [QueryParameter]) -> DSQuery {
         parameters = parameters + newParameters
         return self
     }
     
-    func withParameter(parameter: QueryParameter) -> DSQuery {
+    public func withParameter(parameter: QueryParameter) -> DSQuery {
         parameters.append(parameter)
         return self
     }
     
-    var whereClause: String {
+    public var whereClause: String {
         guard parameters.count > 0 else {
             return ""
         }
@@ -38,29 +38,29 @@ class DSQuery<T: Decodable> {
         return " where \(parametersClause)\(onlyOne ? " Limit 1" : "")"
     }
     
-    var queryString: String {
+    public var queryString: String {
         return "Select * from \(table) \(whereClause)"
     }
     
-    var bindings: [Encodable] {
+    public var bindings: [Encodable] {
         return parameters.map{ $0.queryValue }.compactMap{ $0 }
     }
     
-    func all(on conn: Container) -> Future<[T]> {
+    public func all(on conn: Container) -> Future<[T]> {
         return conn.withPooledConnection(to: .mysql, closure: { (connection) -> EventLoopFuture<[T]> in
             return self.all(on: connection)
         })
     }
     
-    func all(on conn: MySQLConnection) -> Future<[T]> {
+    public func all(on conn: MySQLConnection) -> Future<[T]> {
         return builder(on: conn).all(decoding: T.self)
     }
     
-    func one(on conn: MySQLConnection) -> Future<T?> {
+    public func one(on conn: MySQLConnection) -> Future<T?> {
         return builder(on: conn).first(decoding: T.self)
     }
     
-    func one(on conn: Container) -> Future<T?> {
+    public func one(on conn: Container) -> Future<T?> {
         return conn.withPooledConnection(to: .mysql, closure: { (connection) -> EventLoopFuture<T?> in
             return self.one(on: connection)
         })
@@ -68,7 +68,7 @@ class DSQuery<T: Decodable> {
 }
 
 extension DSQuery {
-    func builder(on conn: MySQLConnection) -> SQLRawBuilder<MySQLConnection> {
+    public func builder(on conn: MySQLConnection) -> SQLRawBuilder<MySQLConnection> {
         var query = conn.raw(queryString)
         query = query.binds(bindings)
         return query

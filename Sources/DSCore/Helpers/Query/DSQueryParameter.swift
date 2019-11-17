@@ -7,15 +7,15 @@
 
 import Foundation
 
-struct DSQueryParameter {
-    enum Operation {
+public struct DSQueryParameter {
+    public enum Operation {
         case lessThan
         case lessThanOrEqual
         case greaterThan
         case greaterThanOrEqual
         case equal
         
-        var string: String {
+        public var string: String {
             switch self {
             case .lessThan:
                 return " < "
@@ -31,32 +31,32 @@ struct DSQueryParameter {
         }
     }
     
-    var key: String
-    var operation: Operation
-    var value: Encodable
+    public var key: String
+    public var operation: Operation
+    public var value: Encodable
 }
 
 extension DSQueryParameter: QueryParameter {
-    var queryString: String {
+    public var queryString: String {
         return "\(key)\(operation.string)?"
     }
     
-    var queryValue: Encodable? {
+    public var queryValue: Encodable? {
         return value
     }
 }
 
-struct WMSNullQueryParameter {
-    var key: String
+public struct WMSNullQueryParameter {
+    public var key: String
 }
 
-protocol QueryParameter {
+public protocol QueryParameter {
     var queryString: String { get }
     var queryValue: Encodable? { get }
 }
 
 extension QueryParameter {
-    static func from(key: String, operation: DSQueryParameter.Operation, value: Encodable?) -> QueryParameter {
+    public static func from(key: String, operation: DSQueryParameter.Operation, value: Encodable?) -> QueryParameter {
         if let v = value {
             return DSQueryParameter(key: key, operation: operation, value: v)
         }
@@ -66,11 +66,11 @@ extension QueryParameter {
     }
 }
 extension WMSNullQueryParameter: QueryParameter {
-    var queryString: String {
+    public var queryString: String {
         return "\(key) is null"
     }
     
-    var queryValue: Encodable? {
+    public var queryValue: Encodable? {
         return nil
     }
 }

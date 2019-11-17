@@ -8,7 +8,7 @@
 import Vapor
 import Fluent
 
-protocol DSController {
+public protocol DSController {
     associatedtype Model
     
     func getAll(_ req: Request) throws -> Future<[Model]>
@@ -22,19 +22,19 @@ protocol DSController {
 
 extension DSController where Model: DSModel, Model.ResolvedParameter == Future<Model> {
     
-    static func routePath() throws -> String {
+    public static func routePath() throws -> String {
         return try Model.routePath()
     }
     
-    func get(_ req: Request) throws -> Future<Model> {
+    public func get(_ req: Request) throws -> Future<Model> {
         return try req.parameters.next(Model.self)
     }
     
-    func create(_ req: Request) throws -> Future<Model> {
+    public func create(_ req: Request) throws -> Future<Model> {
         return try req.content.decode(Model.self).save(on: req)
     }
     
-    func delete(_ req: Request) throws -> Future<Model> {
+    public func delete(_ req: Request) throws -> Future<Model> {
         return try req.parameters.next(Model.self).delete(on: req)
     }
 }

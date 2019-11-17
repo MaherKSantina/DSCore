@@ -7,13 +7,13 @@
 
 import Foundation
 
-protocol TwoModelView {
+public protocol TwoModelView {
     associatedtype Model1: DSModel
     associatedtype Model2: DSModel
 }
 
 extension ModelView where Self: TwoModelView {
-    static var modelNames: [String] {
+    public static var modelNames: [String] {
         return [Model1.entity, Model2.entity]
     }
 }

@@ -8,10 +8,10 @@
 import FluentMySQL
 import Vapor
 
-protocol DSModel: MySQLModel, CRUD, Content, Migration, Parameter, RouteNameable {  }
+public protocol DSModel: MySQLModel, CRUD, Content, Migration, Parameter, RouteNameable {  }
 
 extension DSModel {
-    static var defaultDatabase: DatabaseIdentifier<MySQLDatabase>? {
+    public static var defaultDatabase: DatabaseIdentifier<MySQLDatabase>? {
         return .mysql
     }
 }

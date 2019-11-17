@@ -8,4 +8,4 @@
 import Vapor
 import FluentMySQL
 
-protocol DSModelView: Migration, Content, ModelView {  }
+public protocol DSModelView: Migration, Content, ModelView {  }
