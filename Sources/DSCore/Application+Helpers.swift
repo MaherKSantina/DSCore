@@ -8,7 +8,7 @@
 import Vapor
 
 extension Container {
-    func respondToRequest(request: HTTPRequest) throws -> Future<Response> {
+    public func respondToRequest(request: HTTPRequest) throws -> Future<Response> {
         let responder = try make(Responder.self)
         let wrappedRequest = Request(http: request, using: self)
         return try responder.respond(to: wrappedRequest)
@@ -16,7 +16,7 @@ extension Container {
 }
 
 extension Response {
-    func decode<T>(_ entity: T.Type) throws -> T where T: Decodable {
+    public func decode<T>(_ entity: T.Type) throws -> T where T: Decodable {
         let data = http.body.data ?? Data()
         let responseEntity = try JSONDecoder().decode(T.self, from: data)
         return responseEntity
