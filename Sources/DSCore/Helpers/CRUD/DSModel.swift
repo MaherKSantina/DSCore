@@ -8,9 +8,11 @@
 import FluentMySQL
 import Vapor
 
-public protocol DSModel: MySQLModel, CRUD, Content, Migration, Parameter, RouteNameable {  }
+public protocol DSModel: DSDatabaseInteractable, Content, Migration, Parameter {
+    static var entity: String { get }
+}
 
-extension DSModel {
+extension DSModel where Self: MySQLModel {
     public static func revert(on conn: Database.Connection) -> Future<Void> {
         return conn.simpleQuery("Drop table if exists \(entity)").transform(to: ())
     }
