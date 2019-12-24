@@ -1,5 +1,5 @@
 //
-//  MySQLTwoModelView.swift
+//  DSTwoModelView.swift
 //  App
 //
 //  Created by Maher Santina on 8/3/19.
@@ -8,7 +8,7 @@
 import Vapor
 import FluentMySQL
 
-public protocol MySQLTwoModelView: DSView {
+public protocol DSTwoModelView: DSView {
     associatedtype Model1: DSDatabaseEntityRepresentable
     associatedtype Model2: DSDatabaseEntityRepresentable
 
@@ -17,13 +17,13 @@ public protocol MySQLTwoModelView: DSView {
     static var model2selectFields: [String] { get }
 }
 
-extension MySQLTwoModelView {
+extension DSTwoModelView {
     public static var modelNames: [String] {
         return [Model1.entity, Model2.entity]
     }
 }
 
-extension MySQLTwoModelView {
+extension DSTwoModelView {
     public static var entity1Alias: String {
         return "entity1"
     }
@@ -46,7 +46,7 @@ extension ViewQueryData {
     }
 }
 
-extension MySQLTwoModelView {
+extension DSTwoModelView {
 
     public static func prepare(on conn: MySQLConnection) -> EventLoopFuture<Void> {
 

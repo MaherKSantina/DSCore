@@ -22,11 +22,25 @@ public protocol DSDatabaseReadWriteInteractable: DSDatabaseReadOnlyInteractable 
 }
 
 extension DSDatabaseReadOnlyInteractable {
-    static func all(where: String? = nil, req: DatabaseConnectable) -> Future<[Self]> {
-        return Self.all(where: `where`, req: req)
+    static func all(req: DatabaseConnectable) -> Future<[Self]> {
+        return Self.all(where: nil, req: req)
     }
-    static func first(where: String? = nil, req: DatabaseConnectable) -> Future<Self?> {
-        return Self.first(where: `where`, req: req)
+    static func first(req: DatabaseConnectable) -> Future<Self?> {
+        return Self.first(where: nil, req: req)
+    }
+}
+
+extension DSDatabaseReadOnlyInteractable where Self: DSDatabaseEntityRepresentable, Self: Content {
+    public static func all(where: String?, req: DatabaseConnectable) -> EventLoopFuture<[Self]> {
+        return req.databaseConnection(to: .mysql).flatMap { (conn) -> EventLoopFuture<[Self]> in
+            return conn.raw(Query(tableName: Self.entity, condition: `where`, limit: nil).string).all(decoding: Self.self)
+        }
+    }
+
+    public static func first(where: String?, req: DatabaseConnectable) -> EventLoopFuture<Self?> {
+        return req.databaseConnection(to: .mysql).flatMap { (conn) -> EventLoopFuture<Self?> in
+            return conn.raw(Query(tableName: Self.entity, condition: `where`, limit: nil).string).all(decoding: Self.self).map{ $0.first }
+        }
     }
 }
 
@@ -41,22 +55,6 @@ extension DSDatabaseReadWriteInteractable where Self: MySQLModel {
 
     public static func create(value: Self, req: DatabaseConnectable) -> EventLoopFuture<Self> {
         return value.save(on: req)
-    }
-
-    public static func all(where: String?, req: DatabaseConnectable) -> EventLoopFuture<[Self]> {
-        return req.databaseConnection(to: .mysql).flatMap { (conn) -> EventLoopFuture<[Self]> in
-            return conn.simpleQuery(Query(tableName: Self.entity, condition: `where`, limit: nil).string).flatMap { (dict) -> (Future<[Self]>) in
-                return dict.map{ Database.queryDecode($0, entity: Self.entity, as: Self.self, on: conn) }.flatten(on: conn)
-            }
-        }
-    }
-
-    public static func first(where: String?, req: DatabaseConnectable) -> EventLoopFuture<Self?> {
-        return req.databaseConnection(to: .mysql).flatMap { (conn) -> EventLoopFuture<[Self]> in
-            return conn.simpleQuery(Query(tableName: Self.entity, condition: `where`, limit: 1).string).flatMap { (dict) -> (Future<[Self]>) in
-                return dict.map{ Database.queryDecode($0, entity: Self.entity, as: Self.self, on: conn) }.flatten(on: conn)
-            }
-        }.map{ $0.first }
     }
 }
 

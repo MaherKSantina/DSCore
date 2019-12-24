@@ -47,6 +47,8 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     var migrations = MigrationConfig()
     migrations.add(model: ModelA.self, database: .mysql)
     migrations.add(model: ModelB.self, database: .mysql)
-    migrations.add(migration: InnerJoinViewAB.self, database: .mysql)
+    migrations.add(migration: InnerJoinModelAB.self, database: .mysql)
+    migrations.add(migration: LeftJoinModelAB.self, database: .mysql)
+    migrations.add(migration: RightJoinModelAB.self, database: .mysql)
     services.register(migrations)
 }
