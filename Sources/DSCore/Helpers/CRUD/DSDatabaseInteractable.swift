@@ -10,15 +10,27 @@ import Fluent
 import FluentMySQL
 import Vapor
 
-public protocol DSDatabaseInteractable {
+public protocol DSDatabaseReadOnlyInteractable {
     static func all(where: String?, req: DatabaseConnectable) -> Future<[Self]>
     static func first(where: String?, req: DatabaseConnectable) -> Future<Self?>
+}
+
+public protocol DSDatabaseReadWriteInteractable: DSDatabaseReadOnlyInteractable {
     static func create(value: Self, req: DatabaseConnectable) -> Future<Self>
     static func update(value: Self, req: DatabaseConnectable) -> Future<Self>
     static func delete(value: Self, req: DatabaseConnectable) -> Future<Void>
 }
 
-extension DSModel where Self: MySQLModel {
+extension DSDatabaseReadOnlyInteractable {
+    static func all(where: String? = nil, req: DatabaseConnectable) -> Future<[Self]> {
+        return Self.all(where: `where`, req: req)
+    }
+    static func first(where: String? = nil, req: DatabaseConnectable) -> Future<Self?> {
+        return Self.first(where: `where`, req: req)
+    }
+}
+
+extension DSDatabaseReadWriteInteractable where Self: MySQLModel {
     public static func delete(value: Self, req: DatabaseConnectable) -> EventLoopFuture<Void> {
         return value.delete(on: req)
     }

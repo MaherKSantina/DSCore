@@ -8,12 +8,12 @@
 import Foundation
 
 public protocol ThreeModelView {
-    associatedtype Model1: DSModel
-    associatedtype Model2: DSModel
-    associatedtype Model3: DSModel
+    associatedtype Model1: DSDatabaseEntity
+    associatedtype Model2: DSDatabaseEntity
+    associatedtype Model3: DSDatabaseEntity
 }
 
-extension ModelView where Self: ThreeModelView {
+extension MySQLView where Self: ThreeModelView {
     public static var modelNames: [String] {
         return [Model1.entity, Model2.entity, Model3.entity]
     }

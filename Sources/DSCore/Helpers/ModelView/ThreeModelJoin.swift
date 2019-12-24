@@ -16,7 +16,7 @@ public protocol ThreeModelJoin: ThreeModelView {
     static var model3selectFields: [String] { get }
 }
 
-extension ThreeModelJoin where Self: ModelView, Model1.Database == MySQLDatabase, Model2.Database == MySQLDatabase, Model3.Database == MySQLDatabase {
+extension ThreeModelJoin where Self: MySQLView, Model1.Database == MySQLDatabase, Model2.Database == MySQLDatabase, Model3.Database == MySQLDatabase {
     
     typealias Database = MySQLDatabase
     

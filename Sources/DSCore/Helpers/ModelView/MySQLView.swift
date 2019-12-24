@@ -1,5 +1,5 @@
 //
-//  ModelView.swift
+//  MySQLView.swift
 //  App
 //
 //  Created by Maher Santina on 7/21/19.
@@ -7,18 +7,19 @@
 
 import FluentMySQL
 
-public protocol ModelView: Decodable {
+public protocol MySQLView: Migration, Decodable {
     static var modelNames: [String] { get }
+    static var tableName: String { get }
 }
 
-extension ModelView {
+extension MySQLView {
     public static var tableName: String {
         return "\(modelNames.joined(separator: "_"))View"
     }
 }
 
-extension Migration where Self: ModelView {
-    public static func revert(on conn: MySQLConnection) -> EventLoopFuture<Void> {
+extension DSView {
+    public static func revert(on conn: Database.Connection) -> EventLoopFuture<Void> {
         return conn.raw("Drop View if exists \(Self.tableName)").run()
     }
 }

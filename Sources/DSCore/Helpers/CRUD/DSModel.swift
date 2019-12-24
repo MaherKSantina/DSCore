@@ -8,17 +8,35 @@
 import FluentMySQL
 import Vapor
 
-public protocol DSModel: DSDatabaseInteractable, Content, Migration, Parameter {
+public protocol DSDatabaseEntityRepresentable {
     static var entity: String { get }
 }
 
-extension DSModel where Self: MySQLModel {
-    public static func revert(on conn: Database.Connection) -> Future<Void> {
+public protocol DSDatabaseEntity: DSDatabaseEntityRepresentable, Content, Migration where Database == MySQLDatabase {
+
+}
+
+public protocol DSModel: DSDatabaseEntity, DSDatabaseReadWriteInteractable, MySQLModel, Parameter {
+
+}
+
+public protocol DSView: DSDatabaseEntity, DSDatabaseReadOnlyInteractable, MySQLView {
+
+}
+
+extension MySQLModel {
+    public static func revert(on conn: MySQLConnection) -> Future<Void> {
         return conn.simpleQuery("Drop table if exists \(entity)").transform(to: ())
     }
 }
 
-extension DSModel {
+extension MySQLView {
+    public static func revert(on conn: MySQLConnection) -> Future<Void> {
+        return conn.simpleQuery("Drop view if exists \(tableName)").transform(to: ())
+    }
+}
+
+extension DSDatabaseEntity {
     public static var defaultDatabase: DatabaseIdentifier<MySQLDatabase>? {
         return .mysql
     }
