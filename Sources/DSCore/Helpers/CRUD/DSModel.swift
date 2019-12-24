@@ -41,3 +41,9 @@ extension DSDatabaseEntity {
         return .mysql
     }
 }
+
+extension DSView {
+    public static var entity: String {
+        return tableName
+    }
+}
