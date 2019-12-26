@@ -5,7 +5,12 @@ import FluentMySQL
 final class DSCoreTests: WMSTestCase {
 
     func testAB_InnerJoin_OneRowMissing_ShouldGetCorrectly() {
-                InnerJoinModelAB.join = JoinRelationship(type: .inner, key1: "attributea2", key2: "attributeba2")
+        try! ModelA.revert(on: conn).wait()
+        try! ModelA.prepare(on: conn).wait()
+        try! ModelB.revert(on: conn).wait()
+        try! ModelB.prepare(on: conn).wait()
+
+                InnerJoinModelAB.join = DSJoinRelationship(type: .inner, key1: "attributea2", key2: "attributeba2")
                 do {
                     _ = try ModelA(id: nil, attributea1: "a1", attributea2: "ea2").save(on: conn).wait()
     //                _ = try ModelB(id: nil, attributeb1: "b1", attributeb2: "b2", attributeba2: "ea2").save(on: conn).wait()
@@ -24,7 +29,7 @@ final class DSCoreTests: WMSTestCase {
 
     func testAB_InnerJoin_WithRows_ShouldGetCorrectly() {
 
-        InnerJoinModelAB.join = JoinRelationship(type: .inner, key1: "attributea2", key2: "attributeba2")
+        InnerJoinModelAB.join = DSJoinRelationship(type: .inner, key1: "attributea2", key2: "attributeba2")
         do {
             _ = try ModelA(id: nil, attributea1: "a1", attributea2: "ea2").save(on: conn).wait()
             _ = try ModelB(id: nil, attributeb1: "b1", attributeb2: "b2", attributeba2: "ea2").save(on: conn).wait()
@@ -43,7 +48,7 @@ final class DSCoreTests: WMSTestCase {
 
     func testAB_InnerJoin_First_WithRows_ShouldGetCorrectly() throws {
 
-        InnerJoinModelAB.join = JoinRelationship(type: .inner, key1: "attributea2", key2: "attributeba2")
+        InnerJoinModelAB.join = DSJoinRelationship(type: .inner, key1: "attributea2", key2: "attributeba2")
 //        do {
             _ = try ModelA(id: nil, attributea1: "a1", attributea2: "ea2").save(on: conn).wait()
             _ = try ModelB(id: nil, attributeb1: "b1", attributeb2: "b2", attributeba2: "ea2").save(on: conn).wait()
@@ -97,4 +102,22 @@ final class DSCoreTests: WMSTestCase {
                 }
             }
         }
+
+    func test_NModelView3() throws {
+        _ = try ModelA.all(req: conn).wait().forEach{ try $0.delete(on: conn).wait() }
+        _ = try ModelB.all(req: conn).wait().forEach{ try $0.delete(on: conn).wait() }
+        _ = try ModelC.all(req: conn).wait().forEach{ try $0.delete(on: conn).wait() }
+
+        _ = try ModelA(id: nil, attributea1: "a1", attributea2: "ea2").save(on: conn).wait()
+        _ = try ModelB(id: nil, attributeb1: "b1", attributeb2: "b2", attributeba2: "ea2").save(on: conn).wait()
+        _ = try ModelC(id: nil, attributec1: "c1", attributec2: "c2", attributeca2: "ea2").save(on: conn).wait()
+
+        _ = try ModelA(id: nil, attributea1: "a21", attributea2: "ea22").save(on: conn).wait()
+        _ = try ModelB(id: nil, attributeb1: "b21", attributeb2: "b22", attributeba2: "ea22").save(on: conn).wait()
+        _ = try ModelC(id: nil, attributec1: "c21", attributec2: "c22", attributeca2: "ea22").save(on: conn).wait()
+
+        let items = try NModelView3.all(req: conn).wait()
+
+        XCTAssertEqual(items.count, 2)
+    }
 }

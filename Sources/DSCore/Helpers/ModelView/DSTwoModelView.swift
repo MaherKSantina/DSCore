@@ -12,7 +12,7 @@ public protocol DSTwoModelView: DSView {
     associatedtype Model1: DSDatabaseEntityRepresentable
     associatedtype Model2: DSDatabaseEntityRepresentable
 
-    static var join: JoinRelationship { get }
+    static var join: DSJoinRelationship { get }
     static var model1selectFields: [String] { get }
     static var model2selectFields: [String] { get }
 }
