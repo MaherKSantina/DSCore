@@ -41,6 +41,12 @@ public protocol DSNModelView: DSView {
 }
 
 extension DSNModelView {
+    public static var entity: String {
+        return tableName
+    }
+}
+
+extension DSNModelView {
 
     public static var modelNames: [String] {
         return tables.map{ $0.name }
