@@ -10,6 +10,10 @@ import Fluent
 
 public protocol Controller {
     associatedtype Entity: Model, Content
+    func index(req: Request) throws -> EventLoopFuture<[Entity]>
+    func create(req: Request) throws -> EventLoopFuture<Entity>
+    func delete(req: Request) throws -> EventLoopFuture<HTTPStatus>
+    func setupRoutes(app: Application)
 }
 
 public extension Controller where Entity.IDValue: LosslessStringConvertible {
