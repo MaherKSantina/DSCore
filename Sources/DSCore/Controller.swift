@@ -8,8 +8,13 @@
 import Vapor
 import Fluent
 
+public protocol DSEntity: Content, DSDatabaseRepresentable {
+
+}
+
 public protocol Controller {
-    associatedtype Entity: Model, Content
+    associatedtype Entity: DSEntity
+    static func adapt(queryBuilder: QueryBuilder<Entity>, req: Request) -> QueryBuilder<Entity>
     func index(req: Request) throws -> EventLoopFuture<[Entity]>
     func create(req: Request) throws -> EventLoopFuture<Entity>
     func delete(req: Request) throws -> EventLoopFuture<HTTPStatus>
@@ -19,11 +24,12 @@ public protocol Controller {
 public extension Controller where Entity.IDValue: LosslessStringConvertible {
 
     func index(req: Request) throws -> EventLoopFuture<[Entity]> {
-        return Entity.query(on: req.db).all()
+        return Self.adapt(queryBuilder: Entity.query(on: req.db), req: req).all()
     }
 
     func create(req: Request) throws -> EventLoopFuture<Entity> {
         let todo = try req.content.decode(Entity.self)
+        todo._$id.exists = todo.id != nil
         return todo.save(on: req.db).map { todo }
     }
 
