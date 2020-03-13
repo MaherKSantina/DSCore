@@ -9,7 +9,13 @@ import Vapor
 import Fluent
 
 public protocol DSEntity: Content, DSDatabaseRepresentable {
+    static var queryField: String? { get }
+}
 
+public extension DSEntity {
+    static var queryField: String? {
+        return nil
+    }
 }
 
 public protocol Controller {
@@ -22,6 +28,14 @@ public protocol Controller {
 }
 
 public extension Controller where Entity.IDValue: LosslessStringConvertible {
+
+    static func adapt(queryBuilder: QueryBuilder<Entity>, req: Request) -> QueryBuilder<Entity> {
+        guard let field = Entity.queryField else { return queryBuilder }
+        if let query = try? req.query.get(String.self, at: "query") {
+            return queryBuilder.filter(FieldKey(stringLiteral: field), .contains(inverse: false, .anywhere), query)
+        }
+        return queryBuilder
+    }
 
     func index(req: Request) throws -> EventLoopFuture<[Entity]> {
         return Self.adapt(queryBuilder: Entity.query(on: req.db), req: req).all()
