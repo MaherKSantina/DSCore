@@ -7,6 +7,7 @@
 
 import Vapor
 import Fluent
+import FluentMySQLDriver
 
 public protocol DSEntity: Model, Content {
 
@@ -16,7 +17,7 @@ public protocol DSModel: DSEntityRead, DSEntityWrite, DSDatabaseFieldsRepresenta
 
 }
 
-public protocol DSView: DSEntityRead {
+public protocol DSView: DSEntityRead, DSDatabaseViewQuery {
 
 }
 
@@ -70,16 +71,10 @@ public extension DSEntityWrite where IDValue: LosslessStringConvertible {
 //    app.delete(pc, ":id", use: delete)
 //}
 
-public protocol DSDatabaseFieldsRepresentable: Model, Migration {
+public protocol DSDatabaseFieldsRepresentable {
     static func setupFields(schemaBuilder: SchemaBuilder) -> SchemaBuilder
 }
 
-public extension DSDatabaseFieldsRepresentable {
-    func prepare(on database: Database) -> EventLoopFuture<Void> {
-        return Self.setupFields(schemaBuilder: database.schema(Self.schema)).create()
-    }
-
-    func revert(on database: Database) -> EventLoopFuture<Void> {
-        return database.schema(Self.schema).delete()
-    }
+public protocol DSDatabaseViewQuery {
+    static var viewQuery: String { get }
 }

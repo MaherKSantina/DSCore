@@ -8,7 +8,7 @@
 import Vapor
 import Fluent
 
-public final class TableMigration<T: DSDatabaseFieldsRepresentable> {
+public final class TableMigration<T: DSDatabaseFieldsRepresentable & Model> {
     public init() { }
 }
 
@@ -22,7 +22,7 @@ extension TableMigration: Migration {
     }
 }
 
-public extension DSDatabaseFieldsRepresentable {
+public extension DSDatabaseFieldsRepresentable where Self: Model {
     static var tableMigration: TableMigration<Self> {
         return TableMigration()
     }
