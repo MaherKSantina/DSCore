@@ -7,7 +7,6 @@
 
 import Vapor
 import FluentMySQLDriver
-import FluentSQLiteDriver
 
 public final class ViewMigration<T: DSDatabaseViewQuery & Model>: Migration {
     public init() { }
@@ -19,10 +18,10 @@ public extension ViewMigration {
             let query = "CREATE VIEW \(T.schema) AS \(T.viewQuery)"
             return revert(on: database).flatMap{ mysqlDatabase.simpleQuery(query) }.map{ _ in return }
         }
-        else if let sqliteDatabase = database as? SQLiteDatabase {
-            let query = "CREATE VIEW \(T.schema) AS \(T.viewQuery)"
-            return revert(on: database).flatMap{ sqliteDatabase.query(query) }.map{ _ in return }
-        }
+//        else if let sqliteDatabase = database as? SQLiteDatabase {
+//            let query = "CREATE VIEW \(T.schema) AS \(T.viewQuery)"
+//            return revert(on: database).flatMap{ sqliteDatabase.query(query) }.map{ _ in return }
+//        }
         else {
             assertionFailure()
             return database.eventLoop.future()
@@ -34,9 +33,9 @@ public extension ViewMigration {
         if let mysqlDatabase = database as? MySQLDatabase {
             return mysqlDatabase.simpleQuery("DROP VIEW IF EXISTS \(T.schema)").map{ _ in return }
         }
-        else if let sqliteDatabase = database as? SQLiteDatabase {
-            return sqliteDatabase.query("DROP VIEW IF EXISTS \(T.schema)").map{ _ in return }
-        }
+//        else if let sqliteDatabase = database as? SQLiteDatabase {
+//            return sqliteDatabase.query("DROP VIEW IF EXISTS \(T.schema)").map{ _ in return }
+//        }
         else {
             assertionFailure()
             return database.eventLoop.future()
