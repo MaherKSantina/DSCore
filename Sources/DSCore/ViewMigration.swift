@@ -7,6 +7,7 @@
 
 import Vapor
 import FluentMySQLDriver
+import FluentSQLiteDriver
 
 public final class ViewMigration<T: DSDatabaseViewQuery & Model>: Migration {
     public init() { }
@@ -14,14 +15,33 @@ public final class ViewMigration<T: DSDatabaseViewQuery & Model>: Migration {
 
 public extension ViewMigration {
     func prepare(on database: Database) -> EventLoopFuture<Void> {
-        guard let mysqlDatabase = database as? MySQLDatabase else { assertionFailure(); return database.eventLoop.future() }
-        let query = "CREATE VIEW `ndis`.`\(T.schema)` AS \(T.viewQuery)"
-        return mysqlDatabase.simpleQuery("DROP VIEW IF EXISTS `ndis`.`\(T.schema)`").flatMap{ _ in mysqlDatabase.simpleQuery(query) }.map{ _ in return }
+        if let mysqlDatabase = database as? MySQLDatabase {
+            let query = "CREATE VIEW \(T.schema) AS \(T.viewQuery)"
+            return revert(on: database).flatMap{ mysqlDatabase.simpleQuery(query) }.map{ _ in return }
+        }
+        else if let sqliteDatabase = database as? SQLiteDatabase {
+            let query = "CREATE VIEW \(T.schema) AS \(T.viewQuery)"
+            return revert(on: database).flatMap{ sqliteDatabase.query(query) }.map{ _ in return }
+        }
+        else {
+            assertionFailure()
+            return database.eventLoop.future()
+        }
+
     }
 
     func revert(on database: Database) -> EventLoopFuture<Void> {
-        guard let mysqlDatabase = database as? MySQLDatabase else { assertionFailure(); return database.eventLoop.future() }
-        return mysqlDatabase.simpleQuery("DROP VIEW IF EXISTS `ndis`.`\(T.schema)`").map{ _ in return }
+        if let mysqlDatabase = database as? MySQLDatabase {
+            return mysqlDatabase.simpleQuery("DROP VIEW IF EXISTS \(T.schema)").map{ _ in return }
+        }
+        else if let sqliteDatabase = database as? SQLiteDatabase {
+            return sqliteDatabase.query("DROP VIEW IF EXISTS \(T.schema)").map{ _ in return }
+        }
+        else {
+            assertionFailure()
+            return database.eventLoop.future()
+        }
+
     }
 }
 
