@@ -78,3 +78,13 @@ public protocol DSDatabaseFieldsRepresentable {
 public protocol DSDatabaseViewQuery {
     static var viewQuery: String { get }
 }
+
+public protocol Selfable {
+    static var selfKey: String? { get }
+}
+
+public extension Selfable {
+    static var selfKey: String? {
+        return nil
+    }
+}
