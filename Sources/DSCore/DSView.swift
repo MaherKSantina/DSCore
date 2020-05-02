@@ -19,6 +19,10 @@ public protocol DSViewFields {
     static var viewFields: [DSViewField] { get }
 }
 
+public protocol DSDatabaseViewQuery {
+    static var viewQuery: String { get }
+}
+
 public protocol DSView: DSEntityRead, DSDatabaseViewQuery, DSViewFields {
 
 }
@@ -34,11 +38,7 @@ public extension DSView {
     }
 }
 
-public protocol DSDatabaseViewQuery {
-    static var viewQuery: String { get }
-}
-
-public extension DSView where Self: DSJoinsRepresentable {
+public extension DSJoinsRepresentableView {
     static var viewQuery: String {
         let select = ([mainEntity] + entities).map { (entity) -> [(String, DSViewField)] in
             return entity.fields.map{ (entity.schema, $0) }
@@ -98,7 +98,7 @@ public struct Join {
     }
 }
 
-public protocol DSJoinsRepresentable {
+public protocol DSJoinsRepresentableView: DSView {
     static var mainEntity: ViewInformation { get }
     static var entities: [ViewInformation] { get }
     static var joins: [Join] { get }
