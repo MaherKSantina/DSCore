@@ -24,48 +24,6 @@ public protocol DSEntity: Model, Content, DSIdentifiable {
     
 }
 
-
-public protocol DSEntityRead: DSEntity {
-    static var queryField: String? { get }
-    static func getAll(req: Request) throws -> EventLoopFuture<[Self]>
-}
-
-public extension DSEntityRead {
-    static var queryField: String? {
-        return nil
-    }
-}
-
-public extension DSEntityRead {
-    static func getAll(req: Request) throws -> EventLoopFuture<[Self]> {
-        var queryBuilder = Self.query(on: req.db)
-        if let field = Self.queryField, let query = try? req.query.get(String.self, at: field) {
-            queryBuilder = queryBuilder.filter(FieldKey(stringLiteral: field), .contains(inverse: false, .anywhere), query)
-        }
-        return queryBuilder.all()
-    }
-}
-
-public extension DSEntityRead where Self: DSParent, Self: DSView, Self.IDValue: LosslessStringConvertible {
-    static func getAll(req: Request) throws -> EventLoopFuture<[Self]> {
-        var queryBuilder = Self.query(on: req.db)
-        if let field = Self.queryField, let query = try? req.query.get(String.self, at: field) {
-            queryBuilder = queryBuilder.filter(FieldKey(stringLiteral: field), .contains(inverse: false, .anywhere), query)
-        }
-        return queryBuilder.all().map{ $0.flatten }
-    }
-}
-
-public extension DSEntityRead where Self: DSParent2, Self: DSView, Self.IDValue: LosslessStringConvertible {
-    static func getAll(req: Request) throws -> EventLoopFuture<[Self]> {
-        var queryBuilder = Self.query(on: req.db)
-        if let field = Self.queryField, let query = try? req.query.get(String.self, at: field) {
-            queryBuilder = queryBuilder.filter(FieldKey(stringLiteral: field), .contains(inverse: false, .anywhere), query)
-        }
-        return queryBuilder.all().map{ $0.flatten }
-    }
-}
-
 public protocol DSEntityWrite: DSEntity {
     static func create(req: Request) throws -> EventLoopFuture<Self>
     static func delete(req: Request) throws -> EventLoopFuture<HTTPStatus>
@@ -90,14 +48,4 @@ public extension DSEntityWrite where IDValue: LosslessStringConvertible {
 
 public protocol DSDatabaseFieldsRepresentable {
     static func setupFields(schemaBuilder: SchemaBuilder) -> SchemaBuilder
-}
-
-public protocol Selfable {
-    static var selfKey: String? { get }
-}
-
-public extension Selfable {
-    static var selfKey: String? {
-        return nil
-    }
 }

@@ -20,7 +20,7 @@ public protocol DSModelFields {
     static var modelFields: [DSModelField] { get }
 }
 
-public protocol DSModel: DSEntityRead, DSEntityWrite, DSDatabaseFieldsRepresentable, DSModelFields {
+public protocol DSModel: DSEntityWrite, DSDatabaseFieldsRepresentable, DSModelFields {
 
 }
 

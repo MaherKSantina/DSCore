@@ -8,65 +8,53 @@
 import Vapor
 import Fluent
 
-public enum DSReadAuthorizationMode {
-    case all
-    case userRelated(id: Int)
-    case unauthorized
-}
-
-public enum WriteAuthorizationMode {
-    case allow
-    case unauthorized
-}
-
 public protocol EntityChangeController {
     func entityDidChange(req: Request)
 }
 
 public protocol GetController {
-    associatedtype GetEntity: DSEntityRead & Selfable
+    associatedtype GetEntity: Model
     associatedtype GetEntityOut: Content
 
-    func getQueryBuilder(req: Request) throws -> QueryBuilder<GetEntity>
-    func getAuthorizationMode(req: Request) throws -> DSReadAuthorizationMode
-    func getTransformOut(result: [GetEntity], req: Request) -> [GetEntityOut]
+    func getQueryBuilderTransform(req: Request, queryBuilder: QueryBuilder<GetEntity>) throws -> QueryBuilder<GetEntity>
+    func getTransformOut(result: [GetEntity]) -> [GetEntityOut]
     func get(req: Request) throws -> EventLoopFuture<[GetEntityOut]>
 }
 
 public extension GetController {
 
-    func getQueryBuilder(req: Request) throws -> QueryBuilder<GetEntity> {
-        switch try getAuthorizationMode(req: req) {
-        case .unauthorized:
-            throw Abort(.unauthorized)
-        case .userRelated(let id):
-            guard let path = GetEntity.selfKey else { throw Abort(.badRequest) }
-            var queryBuilder = GetEntity.query(on: req.db)
-            queryBuilder = queryBuilder.filter(FieldKey.string(path), .equal, id)
-            if let field = GetEntity.queryField, let query = try? req.query.get(String.self, at: field) {
-                queryBuilder = queryBuilder.filter(FieldKey(stringLiteral: field), .contains(inverse: false, .anywhere), query)
-            }
-            return queryBuilder
-        case .all:
-            var queryBuilder = GetEntity.query(on: req.db)
-            if let field = GetEntity.queryField, let query = try? req.query.get(String.self, at: field) {
-                queryBuilder = queryBuilder.filter(FieldKey(stringLiteral: field), .contains(inverse: false, .anywhere), query)
-            }
-            return queryBuilder
-        }
-    }
+//    func getQueryBuilder(req: Request) throws -> QueryBuilder<GetEntity> {
+//        switch try getAuthorizationMode(req: req) {
+//        case .unauthorized:
+//            throw Abort(.unauthorized)
+//        case .userRelated(let id):
+//            guard let path = GetEntity.selfKey else { throw Abort(.badRequest) }
+//            var queryBuilder = GetEntity.query(on: req.db)
+//            queryBuilder = queryBuilder.filter(FieldKey.string(path), .equal, id)
+//            if let field = GetEntity.queryField, let query = try? req.query.get(String.self, at: field) {
+//                queryBuilder = queryBuilder.filter(FieldKey(stringLiteral: field), .contains(inverse: false, .anywhere), query)
+//            }
+//            return queryBuilder
+//        case .all:
+//            var queryBuilder = GetEntity.query(on: req.db)
+//            if let field = GetEntity.queryField, let query = try? req.query.get(String.self, at: field) {
+//                queryBuilder = queryBuilder.filter(FieldKey(stringLiteral: field), .contains(inverse: false, .anywhere), query)
+//            }
+//            return queryBuilder
+//        }
+//    }
 }
 
 public extension GetController where GetEntity == GetEntityOut {
-    func getTransformOut(result: [GetEntity], req: Request) -> [GetEntityOut] {
+    func getTransformOut(result: [GetEntity]) -> [GetEntityOut] {
         return result
     }
 }
 
 public extension GetController {
     func get(req: Request) throws -> EventLoopFuture<[GetEntityOut]> {
-        let gets = try getQueryBuilder(req: req).all()
-        return gets.map{ self.getTransformOut(result: $0, req: req) }
+        let gets = try getQueryBuilderTransform(req: req, queryBuilder: GetEntity.query(on: req.db))
+        return gets.all().map{ self.getTransformOut(result: $0) }
     }
 }
 

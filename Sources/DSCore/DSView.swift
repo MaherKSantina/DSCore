@@ -23,7 +23,7 @@ public protocol DSDatabaseViewQuery {
     static var viewQuery: String { get }
 }
 
-public protocol DSView: DSEntityRead, DSDatabaseViewQuery, DSViewFields {
+public protocol DSView: DSEntity, DSDatabaseViewQuery, DSViewFields {
 
 }
 
