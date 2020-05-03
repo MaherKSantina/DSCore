@@ -23,26 +23,9 @@ public protocol GetController {
 
 public extension GetController {
 
-//    func getQueryBuilder(req: Request) throws -> QueryBuilder<GetEntity> {
-//        switch try getAuthorizationMode(req: req) {
-//        case .unauthorized:
-//            throw Abort(.unauthorized)
-//        case .userRelated(let id):
-//            guard let path = GetEntity.selfKey else { throw Abort(.badRequest) }
-//            var queryBuilder = GetEntity.query(on: req.db)
-//            queryBuilder = queryBuilder.filter(FieldKey.string(path), .equal, id)
-//            if let field = GetEntity.queryField, let query = try? req.query.get(String.self, at: field) {
-//                queryBuilder = queryBuilder.filter(FieldKey(stringLiteral: field), .contains(inverse: false, .anywhere), query)
-//            }
-//            return queryBuilder
-//        case .all:
-//            var queryBuilder = GetEntity.query(on: req.db)
-//            if let field = GetEntity.queryField, let query = try? req.query.get(String.self, at: field) {
-//                queryBuilder = queryBuilder.filter(FieldKey(stringLiteral: field), .contains(inverse: false, .anywhere), query)
-//            }
-//            return queryBuilder
-//        }
-//    }
+    func getQueryBuilderTransform(req: Request, queryBuilder: QueryBuilder<GetEntity>) throws -> QueryBuilder<GetEntity> {
+        return queryBuilder
+    }
 }
 
 public extension GetController where GetEntity == GetEntityOut {
