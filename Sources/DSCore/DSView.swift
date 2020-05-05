@@ -13,6 +13,23 @@ public protocol DSViewCodingKeys: CodingKey, CaseIterable, DSViewField { }
 
 public protocol DSViewField {
     var key: String { get }
+    var alias: String? { get }
+}
+
+public extension DSViewField {
+    var alias: String? {
+        return nil
+    }
+}
+
+public struct DSViewFieldData: DSViewField {
+    public var key: String
+    public var alias: String?
+
+    public init(key: String, alias: String?) {
+        self.key = key
+        self.alias = alias
+    }
 }
 
 public protocol DSViewFields {
@@ -30,6 +47,11 @@ public protocol DSView: DSEntity, DSDatabaseViewQuery, DSViewFields {
 public struct ViewInformation {
     public var schema: String
     public var fields: [DSViewField]
+
+    public init(schema: String, fields: [DSViewField]) {
+        self.schema = schema
+        self.fields = fields
+    }
 }
 
 public extension DSView {
@@ -89,7 +111,7 @@ public extension DSJoinsRepresentableView {
             return entity.fields.map{ (entity.schema, $0) }
         }
         .flatMap{ $0 }
-        .map{ "`\($0.0)`.`\($0.1.key)` AS `\($0.0)_\($0.1.key)`" }
+        .map{ "`\($0.0)`.`\($0.1.key)` AS `\($0.1.alias ?? "\($0.0)_\($0.1.key)")`" }
         .joined(separator: ", ")
 
         let joinClause = joins.map{ "\($0.joinType.query) `\($0.foreignEntity)` ON `\($0.foreignEntity)`.`\($0.foreignEntityKey)` = `\($0.baseEntity)`.`\($0.baseEntityKey)` " }.joined(separator: " ")
