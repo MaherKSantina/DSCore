@@ -26,7 +26,7 @@ public struct DSViewFieldData: DSViewField {
     public var key: String
     public var alias: String?
 
-    public init(key: String, alias: String?) {
+    public init(key: String, alias: String? = nil) {
         self.key = key
         self.alias = alias
     }
@@ -42,6 +42,16 @@ public protocol DSDatabaseViewQuery {
 
 public protocol DSView: DSEntity, DSDatabaseViewQuery, DSViewFields {
 
+}
+
+public struct ViewIDInformation {
+    public var schema: String
+    public var key: String
+
+    public init(schema: String, key: String) {
+        self.schema = schema
+        self.key = key
+    }
 }
 
 public struct ViewInformation {
@@ -100,9 +110,16 @@ public struct Join {
 }
 
 public protocol DSJoinsRepresentableView: DSView {
+    static var idInformation: ViewIDInformation { get } 
     static var mainEntity: ViewInformation { get }
     static var entities: [ViewInformation] { get }
     static var joins: [Join] { get }
+}
+
+public extension DSJoinsRepresentableView {
+    static var idInformation: ViewIDInformation {
+        return ViewIDInformation(schema: mainEntity.schema, key: "id")
+    }
 }
 
 public extension DSJoinsRepresentableView {
@@ -114,11 +131,11 @@ public extension DSJoinsRepresentableView {
         .map{ "`\($0.0)`.`\($0.1.key)` AS `\($0.1.alias ?? "\($0.0)_\($0.1.key)")`" }
         .joined(separator: ", ")
 
-        let joinClause = joins.map{ "\($0.joinType.query) `\($0.foreignEntity)` ON `\($0.foreignEntity)`.`\($0.foreignEntityKey)` = `\($0.baseEntity)`.`\($0.baseEntityKey)` " }.joined(separator: " ")
+        let joinClause = joins.map{ "\($0.joinType.query) `\($0.foreignEntity)` ON `\($0.foreignEntity)`.`\($0.foreignEntityKey)` = `\($0.baseEntity)`.`\($0.baseEntityKey)`" }.joined(separator: " ")
 
         let final = """
         SELECT
-        `\(mainEntity.schema)`.`\(mainEntity.fields.first?.key ?? "id")` AS `id`,
+        `\(idInformation.schema)`.`\(idInformation.key)` AS `id`,
         \(select)
         FROM
         `\(mainEntity.schema)`

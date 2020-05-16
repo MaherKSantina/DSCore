@@ -143,5 +143,192 @@ final class DSCoreTests: XCTestCase {
         XCTAssertEqual(finalData[2].children1[0].nameChild1, "Item 3 Child1 1")
         XCTAssertEqual(finalData[3].children1.count, 0)
     }
+
+    func test_DSJoinsRepresentableView_ParentChild() throws {
+
+        final class ParentChildJoinView: DSJoinsRepresentableView {
+            static var idInformation: ViewIDInformation {
+                return ViewIDInformation(schema: mainEntity.schema, key: "field_1")
+            }
+
+
+            typealias IDValue = Int
+
+            var id: Int?
+
+            required init() { }
+
+            static var mainEntity: ViewInformation = ViewInformation(schema: "Parent", fields: [
+                DSViewFieldData(key: "field_1"),
+                DSViewFieldData(key: "child_field_1"),
+                DSViewFieldData(key: "field_2")
+            ])
+
+            static var entities: [ViewInformation] {
+                return [
+                    ViewInformation(schema: "Child", fields: [
+                        DSViewFieldData(key: "field_1"),
+                        DSViewFieldData(key: "field_2")
+                    ])
+                ]
+            }
+
+            static var joins: [Join] {
+                return [
+                    Join(joinType: .left, baseEntity: "Parent", baseEntityKey: "child_field_1", foreignEntity: "Child", foreignEntityKey: "field_1")
+                ]
+            }
+
+            static var viewFields: [DSViewField] {
+                return [
+                    DSViewFieldData(key: "parent_field_1"),
+                    DSViewFieldData(key: "parent_field_2"),
+                    DSViewFieldData(key: "child_field_1"),
+                    DSViewFieldData(key: "child_field_2")
+                ]
+            }
+
+            static var schema: String = "Parent_Child"
+        }
+
+        XCTAssertEqual(ParentChildJoinView.viewQuery,
+        """
+        SELECT
+        `Parent`.`field_1` AS `id`,
+        `Parent`.`field_1` AS `Parent_field_1`, `Parent`.`child_field_1` AS `Parent_child_field_1`, `Parent`.`field_2` AS `Parent_field_2`, `Child`.`field_1` AS `Child_field_1`, `Child`.`field_2` AS `Child_field_2`
+        FROM
+        `Parent`
+         LEFT JOIN  `Child` ON `Child`.`field_1` = `Parent`.`child_field_1`
+        """
+        )
+
+    }
+
+    func test_DSJoinsRepresentableView_ManyToMany() throws {
+
+        final class ParentChildJoinView: DSJoinsRepresentableView {
+
+            static var idInformation: ViewIDInformation {
+                return ViewIDInformation(schema: mainEntity.schema, key: "field_1")
+            }
+
+            typealias IDValue = Int
+
+            var id: Int?
+
+            required init() { }
+
+            static var mainEntity: ViewInformation = ViewInformation(schema: "Parent", fields: [
+                DSViewFieldData(key: "field_1"),
+                DSViewFieldData(key: "field_2")
+            ])
+
+            static var entities: [ViewInformation] {
+                return [
+                    ViewInformation(schema: "Child", fields: [
+                        DSViewFieldData(key: "field_1"),
+                        DSViewFieldData(key: "field_2")
+                    ]),
+                    ViewInformation(schema: "ParentChild", fields: [
+                        DSViewFieldData(key: "parent_field_1"),
+                        DSViewFieldData(key: "child_field_2")
+                    ])
+                ]
+            }
+
+            static var joins: [Join] {
+                return [
+                    Join(joinType: .left, baseEntity: "Parent", baseEntityKey: "field_1", foreignEntity: "ParentChild", foreignEntityKey: "parent_field_1"),
+                    Join(joinType: .left, baseEntity: "ParentChild", baseEntityKey: "child_field_2", foreignEntity: "Child", foreignEntityKey: "field_2"),
+                ]
+            }
+
+            static var viewFields: [DSViewField] {
+                return [
+                    DSViewFieldData(key: "parent_field_1"),
+                    DSViewFieldData(key: "parent_field_2"),
+                    DSViewFieldData(key: "child_field_1"),
+                    DSViewFieldData(key: "child_field_2")
+                ]
+            }
+
+            static var schema: String = "Parent_Child_View"
+        }
+
+        XCTAssertEqual(ParentChildJoinView.viewQuery,
+        """
+        SELECT
+        `Parent`.`field_1` AS `id`,
+        `Parent`.`field_1` AS `Parent_field_1`, `Parent`.`field_2` AS `Parent_field_2`, `Child`.`field_1` AS `Child_field_1`, `Child`.`field_2` AS `Child_field_2`, `ParentChild`.`parent_field_1` AS `ParentChild_parent_field_1`, `ParentChild`.`child_field_2` AS `ParentChild_child_field_2`
+        FROM
+        `Parent`
+         LEFT JOIN  `ParentChild` ON `ParentChild`.`parent_field_1` = `Parent`.`field_1`  LEFT JOIN  `Child` ON `Child`.`field_2` = `ParentChild`.`child_field_2`
+        """
+        )
+
+    }
+
+    func test_DSJoinsRepresentableView_ManyToMany_EntitiesHaveIDs() throws {
+
+        final class ParentChildJoinView: DSJoinsRepresentableView {
+
+            typealias IDValue = Int
+
+            var id: Int?
+
+            required init() { }
+
+            static var mainEntity: ViewInformation = ViewInformation(schema: "Parent", fields: [
+                DSViewFieldData(key: "id"),
+                DSViewFieldData(key: "field_1"),
+                DSViewFieldData(key: "field_2")
+            ])
+
+            static var entities: [ViewInformation] {
+                return [
+                    ViewInformation(schema: "Child", fields: [
+                        DSViewFieldData(key: "id"),
+                        DSViewFieldData(key: "field_1"),
+                        DSViewFieldData(key: "field_2")
+                    ]),
+                    ViewInformation(schema: "ParentChild", fields: [
+                        DSViewFieldData(key: "id"),
+                        DSViewFieldData(key: "parent_field_1"),
+                        DSViewFieldData(key: "child_field_2")
+                    ])
+                ]
+            }
+
+            static var joins: [Join] {
+                return [
+                    Join(joinType: .left, baseEntity: "Parent", baseEntityKey: "field_1", foreignEntity: "ParentChild", foreignEntityKey: "parent_field_1"),
+                    Join(joinType: .left, baseEntity: "ParentChild", baseEntityKey: "child_field_2", foreignEntity: "Child", foreignEntityKey: "field_2"),
+                ]
+            }
+
+            static var viewFields: [DSViewField] {
+                return [
+                    DSViewFieldData(key: "parent_field_1"),
+                    DSViewFieldData(key: "parent_field_2"),
+                    DSViewFieldData(key: "child_field_1"),
+                    DSViewFieldData(key: "child_field_2")
+                ]
+            }
+
+            static var schema: String = "Parent_Child_View"
+        }
+
+        XCTAssertEqual(ParentChildJoinView.viewQuery,
+        """
+        SELECT
+        `Parent`.`id` AS `id`,
+        `Parent`.`id` AS `Parent_id`, `Parent`.`field_1` AS `Parent_field_1`, `Parent`.`field_2` AS `Parent_field_2`, `Child`.`id` AS `Child_id`, `Child`.`field_1` AS `Child_field_1`, `Child`.`field_2` AS `Child_field_2`, `ParentChild`.`id` AS `ParentChild_id`, `ParentChild`.`parent_field_1` AS `ParentChild_parent_field_1`, `ParentChild`.`child_field_2` AS `ParentChild_child_field_2`
+        FROM
+        `Parent`
+         LEFT JOIN  `ParentChild` ON `ParentChild`.`parent_field_1` = `Parent`.`field_1`  LEFT JOIN  `Child` ON `Child`.`field_2` = `ParentChild`.`child_field_2`
+        """
+        )
+
+    }
     
 }
