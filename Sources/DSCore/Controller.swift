@@ -48,7 +48,7 @@ public protocol DeleteController: EntityChangeController {
 
 public extension DeleteController {
     func delete(req: Request) throws -> EventLoopFuture<HTTPStatus> {
-        return try DeleteEntity.delete(req: req)
+        return try DeleteEntity.entityDelete(req: req)
             .always{ _ in
                 self.entityDidChange(req: req)
         }
@@ -62,6 +62,18 @@ public protocol PostController: EntityChangeController {
     func postTransformIn(content: PostEntityIn, req: Request) throws -> EventLoopFuture<PostEntity>
     func post(req: Request) throws -> EventLoopFuture<PostEntityOut>
     func postTransformOut(content: PostEntity, req: Request) -> EventLoopFuture<PostEntityOut>
+    func postCanCreate(item: PostEntity, req: Request) -> Bool
+    func postCanUpdate(item: PostEntity, req: Request) -> Bool
+}
+
+extension PostController {
+    func postCanCreate(item: PostEntity, req: Request) -> Bool {
+        return true
+    }
+
+    func postCanUpdate(item: PostEntity, req: Request) -> Bool {
+        return true
+    }
 }
 
 public extension PostController where PostEntity == PostEntityIn {
@@ -80,14 +92,18 @@ public extension PostController {
     func post(req: Request) throws -> EventLoopFuture<PostEntityOut> {
         let content = try req.content.decode(PostEntityIn.self)
         let item = try postTransformIn(content: content, req: req)
-        return item.map { (item) -> (PostEntity) in
-            item._$id.exists = item.id != nil
-            return item
+        return item
+        .flatMapThrowing{ item -> EventLoopFuture<PostEntity> in
+            switch (item.id != nil, self.postCanCreate(item: item, req: req), self.postCanUpdate(item: item, req: req)) {
+            case (false, true, _), (true, _, true):
+                return try item.entityCreate(req: req)
+            default:
+                throw Abort(.forbidden)
+            }
         }
-        .flatMap{ $0.save(on: req.db) }.always { (_) in
+        .always { (_) in
             self.entityDidChange(req: req)
         }
-        .flatMap{ item }
-        .flatMap{ self.postTransformOut(content: $0, req: req) }
+        .flatMap{ $0.flatMap{ self.postTransformOut(content: $0, req: req) } }
     }
 }
