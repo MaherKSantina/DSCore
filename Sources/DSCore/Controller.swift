@@ -63,10 +63,11 @@ public protocol PostController: EntityChangeController {
     associatedtype PostEntity: DSEntityWrite
     associatedtype PostEntityOut: Content
     func postTransformIn(content: PostEntityIn, req: Request) throws -> EventLoopFuture<PostEntity>
-    func post(req: Request) throws -> EventLoopFuture<PostEntityOut>
-    func postTransformOut(content: PostEntity, req: Request) -> EventLoopFuture<PostEntityOut>
     func postCanCreate(item: PostEntity, req: Request) -> Bool
     func postCanUpdate(item: PostEntity, req: Request) -> Bool
+    func postHandler(item: PostEntity, req: Request) throws -> EventLoopFuture<PostEntity>
+    func post(req: Request) throws -> EventLoopFuture<PostEntityOut>
+    func postTransformOut(content: PostEntity, req: Request) -> EventLoopFuture<PostEntityOut>
 }
 
 public extension PostController {
@@ -76,6 +77,10 @@ public extension PostController {
 
     func postCanUpdate(item: PostEntity, req: Request) -> Bool {
         return true
+    }
+
+    func postHandler(item: PostEntity, req: Request) throws -> EventLoopFuture<PostEntity> {
+        return try item.entityCreate(req: req)
     }
 }
 
@@ -99,7 +104,7 @@ public extension PostController {
         .flatMapThrowing{ item -> EventLoopFuture<PostEntity> in
             switch (item.id != nil, self.postCanCreate(item: item, req: req), self.postCanUpdate(item: item, req: req)) {
             case (false, true, _), (true, _, true):
-                return try item.entityCreate(req: req)
+                return try self.postHandler(item: item, req: req)
             default:
                 throw Abort(.forbidden)
             }
