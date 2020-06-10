@@ -69,7 +69,7 @@ public protocol PostController: EntityChangeController {
     func postCanUpdate(item: PostEntity, req: Request) -> Bool
 }
 
-extension PostController {
+public extension PostController {
     func postCanCreate(item: PostEntity, req: Request) -> Bool {
         return true
     }
