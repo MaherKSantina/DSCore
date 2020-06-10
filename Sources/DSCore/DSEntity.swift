@@ -25,18 +25,12 @@ public protocol DSEntity: Model, Content, DSIdentifiable {
 }
 
 public protocol DSEntityWrite: DSEntity {
-    static func entityCreate(req: Request) throws -> EventLoopFuture<Self>
-    static func entityDelete(req: Request) throws -> EventLoopFuture<HTTPStatus>
+    static func entityDeleteFromRequest(req: Request) throws -> EventLoopFuture<HTTPStatus>
     func entityCreate(req: Request) throws -> EventLoopFuture<Self>
     func entityDelete(req: Request) throws -> EventLoopFuture<HTTPStatus>
 }
 
 public extension DSEntityWrite {
-    static func createEntity(req: Request) throws -> EventLoopFuture<Self> {
-        let todo = try req.content.decode(Self.self)
-        todo._$id.exists = todo.id != nil
-        return todo.save(on: req.db).map { todo }
-    }
 
     func entityCreate(req: Request) throws -> EventLoopFuture<Self> {
         self._$id.exists = self.id != nil
@@ -45,15 +39,6 @@ public extension DSEntityWrite {
 
     func entityDelete(req: Request) throws -> EventLoopFuture<HTTPStatus> {
         return self.delete(on: req.db).transform(to: .ok)
-    }
-}
-
-public extension DSEntityWrite where IDValue: LosslessStringConvertible {
-    static func entityDelete(req: Request) throws -> EventLoopFuture<HTTPStatus> {
-        return Self.find(req.parameters.get("id"), on: req.db)
-            .unwrap(or: Abort(.notFound))
-            .flatMap { $0.delete(on: req.db) }
-            .transform(to: .ok)
     }
 }
 

@@ -46,9 +46,12 @@ public protocol DeleteController: EntityChangeController {
     func delete(req: Request) throws -> EventLoopFuture<HTTPStatus>
 }
 
-public extension DeleteController {
+public extension DeleteController where DeleteEntity.IDValue: LosslessStringConvertible {
     func delete(req: Request) throws -> EventLoopFuture<HTTPStatus> {
-        return try DeleteEntity.entityDelete(req: req)
+        return DeleteEntity.find(req.parameters.get("id"), on: req.db)
+        .unwrap(or: Abort(.notFound))
+        .flatMap { $0.delete(on: req.db) }
+        .transform(to: .ok)
             .always{ _ in
                 self.entityDidChange(req: req)
         }
