@@ -32,7 +32,7 @@ public protocol DSEntityWrite: DSEntity {
 }
 
 public extension DSEntityWrite {
-    static func create(req: Request) throws -> EventLoopFuture<Self> {
+    static func createEntity(req: Request) throws -> EventLoopFuture<Self> {
         let todo = try req.content.decode(Self.self)
         todo._$id.exists = todo.id != nil
         return todo.save(on: req.db).map { todo }
