@@ -25,7 +25,6 @@ public protocol DSEntity: Model, Content, DSIdentifiable {
 }
 
 public protocol DSEntityWrite: DSEntity {
-    static func entityDeleteFromRequest(req: Request) throws -> EventLoopFuture<HTTPStatus>
     func entityCreate(req: Request) throws -> EventLoopFuture<Self>
     func entityDelete(req: Request) throws -> EventLoopFuture<HTTPStatus>
 }
