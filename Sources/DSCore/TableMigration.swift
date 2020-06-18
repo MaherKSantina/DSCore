@@ -7,6 +7,7 @@
 
 import Vapor
 import Fluent
+import FluentMySQLDriver
 
 public final class TableMigration<T: DSDatabaseFieldsRepresentable & Model> {
     public init() { }
