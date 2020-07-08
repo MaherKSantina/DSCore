@@ -15,8 +15,8 @@ let package = Package(
             targets: ["DSCore"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/vapor/vapor.git", from: "4.8.0"),
-        .package(url: "https://github.com/vapor/fluent.git", from: "4.0.0-rc.3.1"),
+        .package(url: "https://github.com/vapor/vapor.git", from: "4.14.0"),
+        .package(url: "https://github.com/vapor/fluent.git", from: "4.0.0"),
         .package(url: "https://github.com/vapor/fluent-mysql-driver.git", from: "4.0.0-rc.2"),
     ],
     targets: [
