@@ -195,10 +195,10 @@ final class DSCoreTests: XCTestCase {
         """
         SELECT
         `Parent`.`field_1` AS `id`,
-        `Parent`.`field_1` AS `Parent_field_1`, `Parent`.`child_field_1` AS `Parent_child_field_1`, `Parent`.`field_2` AS `Parent_field_2`, `Child`.`field_1` AS `Child_field_1`, `Child`.`field_2` AS `Child_field_2`
+        `Parent`.`field_1` AS `Parent_field_1`, `Parent`.`child_field_1` AS `Parent_child_field_1`, `Parent`.`field_2` AS `Parent_field_2`, `t0`.`field_1` AS `Child_field_1`, `t0`.`field_2` AS `Child_field_2`
         FROM
         `Parent`
-         LEFT JOIN  `Child` ON `Child`.`field_1` = `Parent`.`child_field_1`
+         LEFT JOIN  `Child` t0 ON `t0`.`field_1` = `Parent`.`child_field_1`
         """
         )
 
@@ -259,10 +259,10 @@ final class DSCoreTests: XCTestCase {
         """
         SELECT
         `Parent`.`field_1` AS `id`,
-        `Parent`.`field_1` AS `Parent_field_1`, `Parent`.`field_2` AS `Parent_field_2`, `Child`.`field_1` AS `Child_field_1`, `Child`.`field_2` AS `Child_field_2`, `ParentChild`.`parent_field_1` AS `ParentChild_parent_field_1`, `ParentChild`.`child_field_2` AS `ParentChild_child_field_2`
+        `Parent`.`field_1` AS `Parent_field_1`, `Parent`.`field_2` AS `Parent_field_2`, `t0`.`field_1` AS `Child_field_1`, `t0`.`field_2` AS `Child_field_2`, `t1`.`parent_field_1` AS `ParentChild_parent_field_1`, `t1`.`child_field_2` AS `ParentChild_child_field_2`
         FROM
         `Parent`
-         LEFT JOIN  `ParentChild` ON `ParentChild`.`parent_field_1` = `Parent`.`field_1`  LEFT JOIN  `Child` ON `Child`.`field_2` = `ParentChild`.`child_field_2`
+         LEFT JOIN  `ParentChild` t0 ON `t0`.`parent_field_1` = `Parent`.`field_1`  LEFT JOIN  `Child` t1 ON `t1`.`field_2` = `ParentChild`.`child_field_2`
         """
         )
 
@@ -322,10 +322,10 @@ final class DSCoreTests: XCTestCase {
         """
         SELECT
         `Parent`.`id` AS `id`,
-        `Parent`.`id` AS `Parent_id`, `Parent`.`field_1` AS `Parent_field_1`, `Parent`.`field_2` AS `Parent_field_2`, `Child`.`id` AS `Child_id`, `Child`.`field_1` AS `Child_field_1`, `Child`.`field_2` AS `Child_field_2`, `ParentChild`.`id` AS `ParentChild_id`, `ParentChild`.`parent_field_1` AS `ParentChild_parent_field_1`, `ParentChild`.`child_field_2` AS `ParentChild_child_field_2`
+        `Parent`.`id` AS `Parent_id`, `Parent`.`field_1` AS `Parent_field_1`, `Parent`.`field_2` AS `Parent_field_2`, `t0`.`id` AS `Child_id`, `t0`.`field_1` AS `Child_field_1`, `t0`.`field_2` AS `Child_field_2`, `t1`.`id` AS `ParentChild_id`, `t1`.`parent_field_1` AS `ParentChild_parent_field_1`, `t1`.`child_field_2` AS `ParentChild_child_field_2`
         FROM
         `Parent`
-         LEFT JOIN  `ParentChild` ON `ParentChild`.`parent_field_1` = `Parent`.`field_1`  LEFT JOIN  `Child` ON `Child`.`field_2` = `ParentChild`.`child_field_2`
+         LEFT JOIN  `ParentChild` t0 ON `t0`.`parent_field_1` = `Parent`.`field_1`  LEFT JOIN  `Child` t1 ON `t1`.`field_2` = `ParentChild`.`child_field_2`
         """
         )
 

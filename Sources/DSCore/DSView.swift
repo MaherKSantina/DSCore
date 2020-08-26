@@ -57,10 +57,28 @@ public struct ViewIDInformation {
 public struct ViewInformation {
     public var schema: String
     public var fields: [DSViewField]
+    public var fieldsPrefix: String
 
     public init(schema: String, fields: [DSViewField]) {
         self.schema = schema
         self.fields = fields
+        self.fieldsPrefix = schema
+    }
+
+    public init(schema: String, fields: [DSViewField], fieldsPrefix: String) {
+        self.schema = schema
+        self.fields = fields
+        self.fieldsPrefix = fieldsPrefix
+    }
+}
+
+public extension DSModel {
+    static var viewInformation: ViewInformation {
+        return ViewInformation(schema: schema, fields: modelFields.map{ $0 })
+    }
+
+    static func viewInformation(fieldsPrefix: String) -> ViewInformation {
+        return ViewInformation(schema: schema, fields: modelFields.map{ $0 }, fieldsPrefix: fieldsPrefix)
     }
 }
 
@@ -122,16 +140,46 @@ public extension DSJoinsRepresentableView {
     }
 }
 
+fileprivate struct QueryInformation {
+    var viewInformation: ViewInformation
+    var alias: String?
+
+    var selectFields: [ViewSelectField] {
+        return viewInformation.fields.map { (viewField) -> ViewSelectField in
+            return .init(table: viewInformation.schema, tableAlias: alias ?? viewInformation.schema, newPrefix: viewInformation.fieldsPrefix, tableFieldKey: viewField.key, alias: viewField.alias)
+        }
+    }
+}
+
+fileprivate struct ViewSelectField {
+    var table: String
+    var tableAlias: String
+    var newPrefix: String
+    var tableFieldKey: String
+    var alias: String?
+
+    var selectString: String {
+        return "`\(tableAlias)`.`\(tableFieldKey)` AS `\(alias ?? "\(newPrefix)_\(tableFieldKey)`")"
+    }
+}
+
 public extension DSJoinsRepresentableView {
     static var viewQuery: String {
-        let select = ([mainEntity] + entities).map { (entity) -> [(String, DSViewField)] in
-            return entity.fields.map{ (entity.schema, $0) }
-        }
-        .flatMap{ $0 }
-        .map{ "`\($0.0)`.`\($0.1.key)` AS `\($0.1.alias ?? "\($0.0)_\($0.1.key)")`" }
-        .joined(separator: ", ")
+        let tables: [QueryInformation] = [
+            .init(viewInformation: mainEntity, alias: nil)
+        ] + entities.enumerated().map{ QueryInformation(viewInformation: $0.element, alias: "t\($0.offset)") }
 
-        let joinClause = joins.map{ "\($0.joinType.query) `\($0.foreignEntity)` ON `\($0.foreignEntity)`.`\($0.foreignEntityKey)` = `\($0.baseEntity)`.`\($0.baseEntityKey)`" }.joined(separator: " ")
+        let select = tables
+            .flatMap{ $0.selectFields }
+            .map{ $0.selectString }
+            .joined(separator: ", ")
+
+
+
+        let joinClause = joins.enumerated().map{ (offset, element) in
+            let entityAlias = "t\(offset)"
+             return "\(element.joinType.query) `\(element.foreignEntity)` \(entityAlias) ON `\(entityAlias)`.`\(element.foreignEntityKey)` = `\(element.baseEntity)`.`\(element.baseEntityKey)`"
+        }.joined(separator: " ")
 
         let final = """
         SELECT

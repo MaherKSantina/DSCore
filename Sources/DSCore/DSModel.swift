@@ -33,9 +33,3 @@ public extension DSDatabaseFieldsRepresentable where Self: DSModelFields {
         return newSchemaBuilder
     }
 }
-
-public extension DSModel {
-    static var viewInformation: ViewInformation {
-        return ViewInformation(schema: schema, fields: modelFields.map{ $0 })
-    }
-}
