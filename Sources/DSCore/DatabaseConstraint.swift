@@ -25,12 +25,16 @@ public struct DatabaseConstraint: Content {
         self.CONSTRAINT_TYPE = CONSTRAINT_TYPE
     }
 
+    private static func string(key: String, row: MySQLRow) -> String {
+        return row.column(key)!.string!
+    }
+
     public init(mySQLRow: MySQLRow) {
-        self.CONSTRAINT_CATALOG = try! mySQLRow.decode(column: "CONSTRAINT_CATALOG", as: String.self)
-        self.CONSTRAINT_SCHEMA = try! mySQLRow.decode(column: "CONSTRAINT_SCHEMA", as: String.self)
-        self.CONSTRAINT_NAME = try! mySQLRow.decode(column: "CONSTRAINT_NAME", as: String.self)
-        self.TABLE_SCHEMA = try! mySQLRow.decode(column: "TABLE_SCHEMA", as: String.self)
-        self.TABLE_NAME = try! mySQLRow.decode(column: "TABLE_NAME", as: String.self)
-        self.CONSTRAINT_TYPE = try! mySQLRow.decode(column: "CONSTRAINT_TYPE", as: String.self)
+        self.CONSTRAINT_CATALOG = Self.string(key: "CONSTRAINT_CATALOG", row: mySQLRow)
+        self.CONSTRAINT_SCHEMA = Self.string(key: "CONSTRAINT_SCHEMA", row: mySQLRow)
+        self.CONSTRAINT_NAME = Self.string(key: "CONSTRAINT_NAME", row: mySQLRow)
+        self.TABLE_SCHEMA = Self.string(key: "TABLE_SCHEMA", row: mySQLRow)
+        self.TABLE_NAME = Self.string(key: "TABLE_NAME", row: mySQLRow)
+        self.CONSTRAINT_TYPE = Self.string(key: "CONSTRAINT_TYPE", row: mySQLRow)
     }
 }
